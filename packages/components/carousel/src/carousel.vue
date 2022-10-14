@@ -64,7 +64,7 @@
 <script lang="ts" setup>
 import {
   computed,
-  nextTick,
+  getCurrentInstance,
   onBeforeUnmount,
   onMounted,
   provide,
@@ -78,7 +78,7 @@ import { useResizeObserver } from '@vueuse/core'
 import { debugWarn, isString } from '@element-plus/utils'
 import { ElIcon } from '@element-plus/components/icon'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
-import { useNamespace } from '@element-plus/hooks'
+import { useNamespace, useOrderedChildren } from '@element-plus/hooks'
 import { carouselContextKey } from '@element-plus/tokens'
 import { carouselEmits, carouselProps } from './carousel'
 import type { CarouselItemContext } from '@element-plus/tokens'
@@ -93,18 +93,25 @@ const ns = useNamespace('carousel')
 const COMPONENT_NAME = 'ElCarousel'
 const THROTTLE_TIME = 300
 
+const {
+  children: items,
+  addChild: addItem,
+  removeChild: removeItem,
+} = useOrderedChildren<CarouselItemContext>(
+  getCurrentInstance()!,
+  'ElCarouselItem'
+)
+
 // refs
 const activeIndex = ref(-1)
 const timer = ref<ReturnType<typeof setInterval> | null>(null)
 const hover = ref(false)
 const root = ref<HTMLDivElement>()
-const items = ref<Array<CarouselItemContext>>([])
 
 // computed
 const arrowDisplay = computed(
   () => props.arrow !== 'never' && !unref(isVertical)
 )
-const interval = computed(() => props.interval)
 
 const hasLabel = computed(() => {
   return items.value.some((item) => item.props.label.toString().length > 0)
@@ -153,8 +160,8 @@ function pauseTimer() {
 }
 
 function startTimer() {
-  if (interval.value <= 0 || !props.autoplay || timer.value) return
-  timer.value = setInterval(() => playSlides(), interval.value)
+  if (props.interval <= 0 || !props.autoplay || timer.value) return
+  timer.value = setInterval(() => playSlides(), props.interval)
 }
 
 const playSlides = () => {
@@ -191,24 +198,13 @@ function setActiveItem(index: number | string) {
   if (oldIndex === activeIndex.value) {
     resetItemPosition(oldIndex)
   }
+  resetTimer()
 }
 
 function resetItemPosition(oldIndex?: number) {
   items.value.forEach((item, index) => {
     item.translateItem(index, activeIndex.value, oldIndex)
   })
-}
-
-function addItem(item: CarouselItemContext) {
-  items.value.push(item)
-}
-
-function removeItem(uid?: number) {
-  const index = items.value.findIndex((item) => item.uid === uid)
-  if (index !== -1) {
-    items.value.splice(index, 1)
-    if (activeIndex.value === index) next()
-  }
 }
 
 function itemInStage(item: CarouselItemContext, index: number) {
@@ -277,6 +273,11 @@ function next() {
   setActiveItem(activeIndex.value + 1)
 }
 
+function resetTimer() {
+  pauseTimer()
+  startTimer()
+}
+
 // watch
 watch(
   () => activeIndex.value,
@@ -300,17 +301,26 @@ watch(
   }
 )
 
+watch(
+  () => props.interval,
+  () => {
+    resetTimer()
+  }
+)
+
+watch(
+  () => items.value,
+  () => {
+    if (items.value.length > 0) setActiveItem(props.initialIndex)
+  }
+)
+
 const resizeObserver = shallowRef<ReturnType<typeof useResizeObserver>>()
 // lifecycle
-onMounted(async () => {
-  await nextTick()
-
+onMounted(() => {
   resizeObserver.value = useResizeObserver(root.value, () => {
     resetItemPosition()
   })
-  if (props.initialIndex < items.value.length && props.initialIndex >= 0) {
-    activeIndex.value = props.initialIndex
-  }
   startTimer()
 })
 
