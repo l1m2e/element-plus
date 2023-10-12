@@ -67,6 +67,14 @@ tabs/dynamic-tabs
 
 :::
 
+## Customized add button icon ^(2.3.15)
+
+:::demo
+
+tabs/customized-add-button-icon
+
+:::
+
 ## Customized trigger button of new tab
 
 :::demo
@@ -90,19 +98,20 @@ tabs/customized-trigger
 
 ## Tabs Events
 
-| Name       | Description                                           | Parameters                                                           |
-| ---------- | ----------------------------------------------------- | -------------------------------------------------------------------- |
-| tab-click  | triggers when a tab is clicked                        | (pane: `TabsPaneContext`, ev: `Event`)                               |
+| Name       | Description                                           | Parameters                                                          |
+| ---------- | ----------------------------------------------------- | ------------------------------------------------------------------- |
+| tab-click  | triggers when a tab is clicked                        | (pane: `TabsPaneContext`, ev: `Event`)                              |
 | tab-change | triggers when `activeName` is changed                 | (name: `TabPaneName`)                                               |
 | tab-remove | triggers when tab-remove button is clicked            | (name: `TabPaneName`)                                               |
-| tab-add    | triggers when tab-add button is clicked               | —                                                                    |
+| tab-add    | triggers when tab-add button is clicked               | —                                                                   |
 | edit       | triggers when tab-add button or tab-remove is clicked | (paneName: `TabPaneName \| undefined`, action: `'remove' \| 'add'`) |
 
 ## Tabs Slots
 
-| Name | Description               | Subtags  |
-| ---- | ------------------------- | -------- |
-| -    | customize default content | Tab-pane |
+| Name              | Description               | Subtags  |
+| ----------------- | ------------------------- | -------- |
+| -                 | customize default content | Tab-pane |
+| addIcon ^(2.3.15) | customize add button icon | -        |
 
 ## Tab-pane Attributes
 
