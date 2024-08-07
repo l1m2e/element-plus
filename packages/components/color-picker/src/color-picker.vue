@@ -10,6 +10,7 @@
     :stop-popper-mouse-event="false"
     effect="light"
     trigger="click"
+    :teleported="teleported"
     :transition="`${ns.namespace.value}-zoom-in-top`"
     persistent
     @hide="setShowPicker(false)"
@@ -24,6 +25,7 @@
         <predefine
           v-if="predefine"
           ref="predefine"
+          :enable-alpha="showAlpha"
           :color="color"
           :colors="predefine"
         />
@@ -61,6 +63,7 @@
       <div
         :id="buttonId"
         ref="triggerRef"
+        v-bind="$attrs"
         :class="btnKls"
         role="button"
         :aria-label="buttonAriaLabel"
@@ -215,7 +218,7 @@ const currentColor = computed(() => {
 
 const buttonAriaLabel = computed<string | undefined>(() => {
   return !isLabeledByFormItem.value
-    ? props.label || t('el.colorpicker.defaultLabel')
+    ? props.ariaLabel || t('el.colorpicker.defaultLabel')
     : undefined
 })
 
